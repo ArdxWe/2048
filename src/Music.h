@@ -8,7 +8,7 @@
 
 class Music {
  public:
-  explicit Music(const std::string &);
+  [[maybe_unused]] explicit Music(const std::string &);
   ~Music();
   void play();
 

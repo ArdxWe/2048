@@ -1,6 +1,6 @@
 #include "Application.h"
 
-int main(int argc, char* argv[]) {
+int main() {
   Application application{};
   application.run();
   return 0;

@@ -14,7 +14,7 @@ using namespace std::string_literals;
 }  // namespace
 
 Image::Image() {
-  uint flags = IMG_INIT_PNG;
+  int flags = IMG_INIT_PNG;
   if (!(static_cast<uint>(IMG_Init(flags)) & flags)) {
     throw runtime_error{"Error call IMG_Init: "s + SDL_GetError()};
   }

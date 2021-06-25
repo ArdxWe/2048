@@ -11,8 +11,6 @@ class Texture {
   Texture() = default;
   explicit Texture(SDL_Texture *x);
   SDL_Texture *get();
-  void setBlendMode(SDL_BlendMode mode);
-  void setAlpha(uint8_t alpha);
 
  private:
   struct Deleter {

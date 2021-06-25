@@ -19,7 +19,7 @@ App::App() {
   if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) < 0) {
     throw runtime_error{"Error call SDL_Init: "s + SDL_GetError()};
   }
-  uint flags = IMG_INIT_PNG;
+  int flags = IMG_INIT_PNG;
   if (!(static_cast<uint>(IMG_Init(flags)) & flags)) {
     throw runtime_error{"Error call IMG_Init: "s + SDL_GetError()};
   }

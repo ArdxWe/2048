@@ -10,10 +10,10 @@ class Texture;
 class Renderer {
  public:
   struct Rect {
-    int x;
-    int y;
-    int width;
-    int height;
+    [[maybe_unused]] int x;
+    [[maybe_unused]] int y;
+    [[maybe_unused]] int width;
+    [[maybe_unused]] int height;
   };
   struct Rgba {
     uint8_t r;
@@ -26,7 +26,6 @@ class Renderer {
   SDL_Renderer *get();
   void clear();
   void copyTexture(Texture &texture, Rect *src, Rect *dst);
-  void copyAllTexture(Texture &texture);
   void renderPresent();
 
  private:

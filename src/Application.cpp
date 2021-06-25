@@ -23,6 +23,7 @@ using std::move;
 using std::mutex;
 using std::runtime_error;
 using std::sort;
+using std::streamsize;
 using std::string;
 using std::stringstream;
 using std::unique_lock;
@@ -51,7 +52,7 @@ stringstream executeCmd(const string &cmd) {
 
   while ((n = fread(buff.data(), sizeof(buff[0]), buff.size(), pipe.get())) >
          0) {
-    stream.write(buff.data(), n);
+    stream.write(buff.data(), static_cast<streamsize>(n));
   }
   return stream;
 }
@@ -106,7 +107,7 @@ int log(int x) {
     res++;
   }
   return res;
-};
+}
 
 void setIcon(Window &window, Surface &icon) {
   SDL_SetWindowIcon(window.get(), icon.get());
@@ -138,7 +139,7 @@ void Application::run() {
   string text = "scores: "s;
   string author = "by ardxwe"s;
   Rect dst;
-  double frame_tm = 0;
+  double frame_tm;
   std::chrono::high_resolution_clock::time_point now;
   while (!quit) {
     now = std::chrono::high_resolution_clock::now();
@@ -242,8 +243,8 @@ void Application::run() {
     frame_tm = std::chrono::duration_cast<std::chrono::duration<double>>(
                    std::chrono::high_resolution_clock::now() - now)
                    .count();
-    if (frame_tm < static_cast<double>(1000) / FPS) {
-      SDL_Delay(static_cast<double>(1000) / FPS - frame_tm);
+    if (frame_tm < 1000.0 / FPS) {
+      SDL_Delay(static_cast<uint32_t>(1000.0 / FPS - frame_tm));
     }
   }
 }
@@ -336,7 +337,7 @@ void Application::core(keyState state) {
       break;
     case keyState::OTHER:
       for (size_t i = 0; i < map_.size(); i++) {
-        copyTexture(log(map_[i]), i);
+        copyTexture(log(map_[i]), static_cast<int>(i));
       }
   }
 }
@@ -356,7 +357,7 @@ vector<int> Application::merge(std::vector<int> &nums) {
   for (size_t i = 0; i < res.size() - 1; i++) {
     if (res[i] != 0 && res[i] == res[i + 1]) {
       res[i] += res[i];
-      scores_ += res[i];
+      scores_ = res[i] + scores_;
       for (size_t j = i + 1; j < res.size() - 1; j++) {
         res[j] = res[j + 1];
       }

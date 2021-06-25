@@ -40,8 +40,4 @@ void Renderer::copyTexture(Texture &texture, Rect *src, Rect *dst) {
                  reinterpret_cast<SDL_Rect *>(dst));
 }
 
-void Renderer::copyAllTexture(Texture &texture) {
-  SDL_RenderCopy(renderer_.get(), texture.get(), nullptr, nullptr);
-}
-
 void Renderer::renderPresent() { SDL_RenderPresent(renderer_.get()); }
