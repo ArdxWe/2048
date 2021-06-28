@@ -61,6 +61,7 @@ class Application {
       Window::Size &size,
       std::array<std::array<Renderer::Rect, 4>, 4> &locations);
   bool end();
+  bool noZero();
 };
 
 #endif  // DEMO_APPLICATION_H

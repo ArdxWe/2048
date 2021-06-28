@@ -5,6 +5,7 @@
 #include "Application.h"
 
 #include <algorithm>
+#include <cassert>
 #include <chrono>
 #include <condition_variable>
 #include <cstdint>
@@ -38,9 +39,7 @@ constexpr const char *FONTS_CMD = "find /usr/share/fonts -name '*.ttf'";
 constexpr const char *IMAGE_CMD = "find ../res/image -name '*.png'";
 constexpr const char *MUSIC_PATH = "../res/music/hd.mp3";
 constexpr const char *ICON_PATH = "../res/image/icon.png";
-constexpr const Window::Size INIT_SIZE{960, 720};
-constexpr const Window::Size MIN_SIZE{600, 450};
-constexpr const Window::Size MAX_SIZE{1920, 1440};
+constexpr const Window::Size INIT_SIZE{720, 540};
 
 stringstream executeCmd(const string &cmd) {
   auto close = [](FILE *file) { pclose(file); };
@@ -61,8 +60,7 @@ Window createWindow() {
   Window window{"2048"s,
                 0x2FFF0000,  // center
                 0x2FFF0000,  // center
-                INIT_SIZE,
-                static_cast<uint32_t>(SDL_WINDOW_SHOWN) | SDL_WINDOW_RESIZABLE};
+                INIT_SIZE, static_cast<uint32_t>(SDL_WINDOW_SHOWN)};
   return window;
 }
 
@@ -124,14 +122,12 @@ Application::Application()
       icon_{ICON_PATH} {
   setIcon(window_, icon_);
   renderer_.setColor(BACKGROUND);
-  window_.setMinSize(MIN_SIZE);
-  window_.setMaxSize(MAX_SIZE);
   updateLocations(size_, locations_);
 }
 
 void Application::run() {
   music_.play();
-  Font big{createFont(48)};
+  Font big{createFont(36)};
   Font small{createFont(24)};
   bool quit = false;
   SDL_Event e;
@@ -151,13 +147,6 @@ void Application::run() {
           quit = true;
           break;
         }
-        case SDL_WINDOWEVENT:
-          if (e.window.event == SDL_WINDOWEVENT_RESIZED) {
-            size_.h = e.window.data2;
-            size_.w = e.window.data1;
-            updateLocations(size_, locations_);
-          }
-          break;
         case SDL_KEYDOWN:
           keyStates = SDL_GetKeyboardState(nullptr);
           switch (state_) {
@@ -171,6 +160,30 @@ void Application::run() {
               }
               break;
             case State::RUNNING: {
+              if (keyStates[SDL_SCANCODE_UP]) {
+                core(keyState::UP);
+                if (!noZero()) {
+                  copyTexture(1, getRandom());
+                }
+              } else if (keyStates[SDL_SCANCODE_DOWN]) {
+                core(keyState::DOWN);
+                if (!noZero()) {
+                  copyTexture(1, getRandom());
+                }
+              } else if (keyStates[SDL_SCANCODE_LEFT]) {
+                core(keyState::LEFT);
+                if (!noZero()) {
+                  copyTexture(1, getRandom());
+                }
+              } else if (keyStates[SDL_SCANCODE_RIGHT]) {
+                core(keyState::RIGHT);
+                if (!noZero()) {
+                  copyTexture(1, getRandom());
+                }
+              } else {
+                core(keyState::OTHER);
+              }
+
               if (end()) {
                 {
                   Surface over{
@@ -192,21 +205,6 @@ void Application::run() {
                 renderer_.renderPresent();
                 SDL_Delay(1000);
                 break;
-              }
-              if (keyStates[SDL_SCANCODE_UP]) {
-                core(keyState::UP);
-                copyTexture(1, getRandom());
-              } else if (keyStates[SDL_SCANCODE_DOWN]) {
-                core(keyState::DOWN);
-                copyTexture(1, getRandom());
-              } else if (keyStates[SDL_SCANCODE_LEFT]) {
-                core(keyState::LEFT);
-                copyTexture(1, getRandom());
-              } else if (keyStates[SDL_SCANCODE_RIGHT]) {
-                core(keyState::RIGHT);
-                copyTexture(1, getRandom());
-              } else {
-                core(keyState::OTHER);
               }
             }
             default:
@@ -343,6 +341,7 @@ void Application::core(keyState state) {
 }
 
 vector<int> Application::merge(std::vector<int> &nums) {
+  assert(nums.size() == 4);
   vector<int> res;
   size_t count = 0;
   for (int &num : nums) {
@@ -351,20 +350,70 @@ vector<int> Application::merge(std::vector<int> &nums) {
       res.push_back(num);
     }
   }
-  for (size_t i = 0; i < (nums.size() - count); i++) {
+  for (size_t i = 0; i < (4 - count); i++) {
     res.push_back(0);
   }
-  for (size_t i = 0; i < res.size() - 1; i++) {
-    if (res[i] != 0 && res[i] == res[i + 1]) {
-      res[i] += res[i];
-      scores_ = res[i] + scores_;
-      for (size_t j = i + 1; j < res.size() - 1; j++) {
-        res[j] = res[j + 1];
-      }
-      res[res.size() - 1] = 0;
+
+  int value;
+  switch (count) {
+    case 0:
+    case 1:
       break;
-    }
+    case 2:
+      if (res[0] == res[1]) {
+        res[0] += res[0];
+        value = res[0];
+        scores_ += value;
+        res[1] = 0;
+      }
+      break;
+    case 3:
+      if (res[0] == res[1]) {
+        res[0] += res[0];
+        value = res[0];
+        scores_ += value;
+        res[1] = res[2];
+        res[2] = 0;
+      } else if (res[1] == res[2]) {
+        res[1] += res[1];
+        value = res[1];
+        scores_ += value;
+        res[2] = 0;
+      }
+      break;
+    case 4:
+      if (res[0] == res[1]) {
+        if (res[2] == res[3]) {
+          res[0] += res[1];
+          res[1] = res[2] + res[3];
+          scores_ += res[0] + res[1];
+          res[2] = 0;
+          res[3] = 0;
+        } else {
+          res[0] += res[0];
+          value = res[0];
+          scores_ += value;
+          res[1] = res[2];
+          res[2] = res[3];
+          res[3] = 0;
+        }
+      } else if (res[1] == res[2]) {
+        res[1] += res[1];
+        value = res[1];
+        scores_ += value;
+        res[2] = res[3];
+        res[3] = 0;
+      } else if (res[2] == res[3]) {
+        res[2] += res[2];
+        value = res[2];
+        scores_ += value;
+        res[3] = 0;
+      }
+      break;
+    default:
+      break;
   }
+
   return res;
 }
 
@@ -385,7 +434,27 @@ void Application::updateLocations(
 }
 
 bool Application::end() {
-  bool res = false;
+  bool res = noZero();
+
+  if (res) {
+    for (int i = 0; i < 16; i++) {
+      if (i / 4 < 3) {
+        if (map_[i] == map_[i + 4]) {
+          res = false;
+        }
+      }
+      if (i % 4 < 3) {
+        if (map_[i] == map_[i + 1]) {
+          res = false;
+        }
+      }
+    }
+  }
+  return res;
+}
+
+bool Application::noZero() {
+  bool res = true;
   for (auto &item : map_) {
     if (item == 0) {
       res = false;
