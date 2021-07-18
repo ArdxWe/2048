@@ -27,11 +27,3 @@ Window::Size Window::getSize() {
   SDL_GetWindowSize(window_.get(), &size_.w, &size_.h);
   return size_;
 }
-
-void Window::setMinSize(const Size &size) {
-  SDL_SetWindowMinimumSize(window_.get(), size.w, size.h);
-}
-
-void Window::setMaxSize(const Size &size) {
-  SDL_SetWindowMaximumSize(window_.get(), size.w, size.h);
-}

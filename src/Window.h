@@ -17,8 +17,6 @@ class Window {
          uint32_t flags);
   [[nodiscard]] SDL_Window *get() const;
   Size getSize();
-  void setMinSize(const Size &size);
-  void setMaxSize(const Size &size);
 
  private:
   struct Deleter {
