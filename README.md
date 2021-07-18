@@ -6,14 +6,17 @@
 - 方向键移动
 - 记录得分
 
-
 ## 需求
 
 ```bash
 $ sudo apt-get install libsdl2-dev
+$ sudo apt-get install libsdl2-ttf-dev
+$ sudo apt-get install libsdl2-image-dev
+$ sudo apt-get install libsdl2-mixer-dev
 ```
 
 ## 构建
+
 ```bash
 $ mkdir build
 $ cd build
