@@ -48,14 +48,15 @@ class Application {
  private:
   int getRandom();
   void copyTexture(int image_index, int location_index);
-  enum class keyState {
+  enum class KeyState {
     UP,
     DOWN,
     LEFT,
     RIGHT,
     OTHER,
   };
-  void core(keyState state);
+  void control(KeyState state);
+  void view();
   std::vector<int> merge(std::vector<int> &nums);
   static void updateLocations(
       Window::Size &size,

@@ -33,8 +33,10 @@ using std::vector;
 using Rect = Renderer::Rect;
 using namespace std::string_literals;
 
-constexpr int FPS = 80;
-constexpr Renderer::Rgba BACKGROUND = {135, 206, 255, 255};
+constexpr const int FPS = 80;
+constexpr const int SCORES_SIZE = 18;
+constexpr const int AUTHOR_SIZE = 15;
+constexpr const Renderer::Rgba BACKGROUND = {135, 206, 255, 255};
 constexpr const char *FONTS_CMD = "find /usr/share/fonts -name '*.ttf'";
 constexpr const char *IMAGE_CMD = "find ../res/image -name '*.png'";
 constexpr const char *MUSIC_PATH = "../res/music/hd.mp3";
@@ -127,8 +129,8 @@ Application::Application()
 
 void Application::run() {
   music_.play();
-  Font big{createFont(36)};
-  Font small{createFont(24)};
+  Font big{createFont(SCORES_SIZE)};
+  Font small{createFont(AUTHOR_SIZE)};
   bool quit = false;
   SDL_Event e;
   const uint8_t *keyStates;
@@ -140,7 +142,7 @@ void Application::run() {
   while (!quit) {
     now = std::chrono::high_resolution_clock::now();
     renderer_.clear();
-    core(keyState::OTHER);
+    control(KeyState::OTHER);
     while (SDL_PollEvent(&e) != 0) {
       switch (e.type) {
         case SDL_QUIT: {
@@ -161,27 +163,31 @@ void Application::run() {
               break;
             case State::RUNNING: {
               if (keyStates[SDL_SCANCODE_UP]) {
-                core(keyState::UP);
+                control(KeyState::UP);
                 if (!noZero()) {
                   copyTexture(1, getRandom());
                 }
+                view();
               } else if (keyStates[SDL_SCANCODE_DOWN]) {
-                core(keyState::DOWN);
+                control(KeyState::DOWN);
                 if (!noZero()) {
                   copyTexture(1, getRandom());
                 }
+                view();
               } else if (keyStates[SDL_SCANCODE_LEFT]) {
-                core(keyState::LEFT);
+                control(KeyState::LEFT);
                 if (!noZero()) {
                   copyTexture(1, getRandom());
                 }
+                view();
               } else if (keyStates[SDL_SCANCODE_RIGHT]) {
-                core(keyState::RIGHT);
+                control(KeyState::RIGHT);
                 if (!noZero()) {
                   copyTexture(1, getRandom());
                 }
+                view();
               } else {
-                core(keyState::OTHER);
+                control(KeyState::OTHER);
               }
 
               if (end()) {
@@ -212,7 +218,7 @@ void Application::run() {
           }
       }
     }
-
+    view();
     // scores
     {
       Surface surface{big, text + std::to_string(scores_), {0, 0, 0}};
@@ -262,81 +268,77 @@ void Application::copyTexture(int image_index, int location_index) {
                         &locations_[location_index / 4][location_index % 4]);
 }
 
-void Application::core(keyState state) {
+void Application::control(KeyState state) {
   vector<int> nums(4);
   switch (state) {
-    case keyState::UP:
+    case KeyState::UP:
       for (size_t j = 0; j < 4; j++) {
         nums[0] = map_[j];
         nums[1] = map_[4 + j];
         nums[2] = map_[8 + j];
         nums[3] = map_[12 + j];
+
         nums = merge(nums);
 
-        for (size_t i = 0; i < nums.size(); i++) {
-          copyTexture(log(nums[i]), static_cast<int>(i * 4 + j));
-        }
         map_[j] = nums[0];
         map_[4 + j] = nums[1];
         map_[8 + j] = nums[2];
         map_[12 + j] = nums[3];
       }
       break;
-    case keyState::DOWN:
+    case KeyState::DOWN:
       for (size_t j = 0; j < 4; j++) {
         nums[0] = map_[12 + j];
         nums[1] = map_[8 + j];
         nums[2] = map_[4 + j];
         nums[3] = map_[j];
+
         nums = merge(nums);
 
-        for (size_t i = 0; i < nums.size(); i++) {
-          copyTexture(log(nums[i]), static_cast<int>((3 - i) * 4 + j));
-        }
         map_[12 + j] = nums[0];
         map_[8 + j] = nums[1];
         map_[4 + j] = nums[2];
         map_[j] = nums[3];
       }
       break;
-    case keyState::LEFT:
+    case KeyState::LEFT:
       for (size_t j = 0; j < 4; j++) {
         nums[0] = map_[4 * j];
         nums[1] = map_[1 + 4 * j];
         nums[2] = map_[2 + 4 * j];
         nums[3] = map_[3 + 4 * j];
+
         nums = merge(nums);
 
-        for (size_t i = 0; i < nums.size(); i++) {
-          copyTexture(log(nums[i]), static_cast<int>(i + 4 * j));
-        }
         map_[4 * j] = nums[0];
         map_[1 + 4 * j] = nums[1];
         map_[2 + 4 * j] = nums[2];
         map_[3 + 4 * j] = nums[3];
       }
       break;
-    case keyState::RIGHT:
+    case KeyState::RIGHT:
       for (size_t j = 0; j < 4; j++) {
         nums[0] = map_[3 + 4 * j];
         nums[1] = map_[2 + 4 * j];
         nums[2] = map_[1 + 4 * j];
         nums[3] = map_[4 * j];
+
         nums = merge(nums);
 
-        for (size_t i = 0; i < nums.size(); i++) {
-          copyTexture(log(nums[i]), static_cast<int>((3 - i) + 4 * j));
-        }
         map_[3 + 4 * j] = nums[0];
         map_[2 + 4 * j] = nums[1];
         map_[1 + 4 * j] = nums[2];
         map_[4 * j] = nums[3];
       }
       break;
-    case keyState::OTHER:
-      for (size_t i = 0; i < map_.size(); i++) {
-        copyTexture(log(map_[i]), static_cast<int>(i));
-      }
+    case KeyState::OTHER:
+      break;
+  }
+}
+
+void Application::view() {
+  for (int i = 0; i < map_.size(); i++) {
+    copyTexture(log(map_[i]), static_cast<int>(i));
   }
 }
 
@@ -413,7 +415,6 @@ vector<int> Application::merge(std::vector<int> &nums) {
     default:
       break;
   }
-
   return res;
 }
 
