@@ -10,10 +10,10 @@ class Texture;
 class Renderer {
  public:
   struct Rect {
-    [[maybe_unused]] int x;
-    [[maybe_unused]] int y;
-    [[maybe_unused]] int width;
-    [[maybe_unused]] int height;
+    int x;
+    int y;
+    int width;
+    int height;
   };
   struct Rgba {
     uint8_t r;

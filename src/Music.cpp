@@ -13,7 +13,7 @@ using std::string;
 using namespace std::string_literals;
 }  // namespace
 
-[[maybe_unused]] Music::Music(const string &file) {
+Music::Music(const string &file) {
   if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 1, 2048) < 0) {
     throw runtime_error{"Call Mix_OpenAudio error: "s + Mix_GetError()};
   }
